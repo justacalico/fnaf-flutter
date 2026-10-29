@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.3 - 2026-10-29
+#### Bug Fixes
+- 落地页接线与展示图 - (5c090a3) - calico
+
+- - -
+
 ## v0.1.2 - 2026-10-29
 #### Bug Fixes
 - 黄金图加载真实字体 - (9b4efc6) - calico
