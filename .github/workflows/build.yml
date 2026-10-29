@@ -188,7 +188,7 @@ jobs:
                 - install -Dm644 gitlab.httpanimations.fnafflutter.metainfo.xml /app/share/metainfo/gitlab.httpanimations.fnafflutter.metainfo.xml
               sources:
                 - type: dir
-                  path: ../bundle-dir
+                  path: bundle-dir
                 - type: file
                   path: fnaf.desktop
                 - type: file
