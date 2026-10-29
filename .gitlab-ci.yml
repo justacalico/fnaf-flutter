@@ -86,7 +86,7 @@ auto-release:
     - install -m 755 /tmp/cog/x86_64-unknown-linux-musl/cog /usr/local/bin/cog
     - git config user.name "GitLab CI"
     - git config user.email "ci@gitlab.com"
-    - git remote set-url origin "https://oauth2:${GITLAB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
+    - git remote set-url origin "https://gitlab-ci-token:${CI_JOB_TOKEN}@${CI_SERVER_HOST}/${CI_PROJECT_PATH}.git"
   script:
     - bash scripts/auto-release.sh
 
