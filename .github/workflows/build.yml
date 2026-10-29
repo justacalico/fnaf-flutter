@@ -139,7 +139,7 @@ jobs:
           printf 'Package: fnaf-flutter\nVersion: %s\nSection: misc\nPriority: optional\nArchitecture: %s\nMaintainer: CI\nDepends: libgtk-3-0, libgstreamer1.0-0, libgstreamer-plugins-base1.0-0\nDescription: FNAF Flutter desktop\n' "$V" "$([ "$A" = x64 ] && echo amd64 || echo arm64)" > pkg/DEBIAN/control
           mkdir -p pkg/usr/share/applications pkg/usr/share/icons/hicolor/512x512/apps
           printf '[Desktop Entry]\nName=FNAF\nExec=fnaf\nIcon=fnaf\nType=Application\nCategories=Game;\n' > pkg/usr/share/applications/fnaf.desktop
-          cp assets/icon.png pkg/usr/share/icons/hicolor/512x512/apps/fnaf.png
+          cp assets/icon-512.png pkg/usr/share/icons/hicolor/512x512/apps/fnaf.png
           dpkg-deb --build pkg "artifacts/fnaf-linux-$A.deb"
           mkdir -p "$HOME/rpmbuild/SPECS" "$HOME/rpmbuild/BUILD" "$HOME/rpmbuild/RPMS" "$HOME/rpmbuild/SOURCES" "$HOME/rpmbuild/SRPMS"
           printf 'Name: fnaf-flutter\nVersion: %s\nRelease: 1%%{?dist}\nSummary: FNAF Flutter desktop\nLicense: AGPL-3.0\n%%description\nFNAF Flutter desktop\n%%prep\n%%build\n%%install\nmkdir -p %%{buildroot}/opt/fnaf %%{buildroot}/usr/bin\ncp -r %s/pkg/opt/fnaf/* %%{buildroot}/opt/fnaf/\nln -sf /opt/fnaf/fnaf_flutter %%{buildroot}/usr/bin/fnaf\n%%files\n/opt/fnaf\n/usr/bin/fnaf\n' "$V" "$GITHUB_WORKSPACE" > "$HOME/rpmbuild/SPECS/fnaf.spec"
@@ -149,8 +149,8 @@ jobs:
           cp -r "$B" appdir/opt/fnaf
           ln -sf ../../opt/fnaf/fnaf_flutter appdir/usr/bin/fnaf_flutter
           printf '[Desktop Entry]\nName=FNAF\nExec=fnaf_flutter\nIcon=fnaf\nType=Application\nCategories=Game;\n' > appdir/fnaf.desktop
-          cp assets/icon.png appdir/fnaf.png
-          cp assets/icon.png appdir/usr/share/icons/hicolor/512x512/apps/fnaf.png
+          cp assets/icon-512.png appdir/fnaf.png
+          cp assets/icon-512.png appdir/usr/share/icons/hicolor/512x512/apps/fnaf.png
           printf '#!/bin/sh\nHERE="$(dirname "$(readlink -f "$0")")"\nexec "$HERE/opt/fnaf/fnaf_flutter" "$@"\n' > appdir/AppRun && chmod +x appdir/AppRun
           T_ARCH=$([ "$A" = x64 ] && echo x86_64 || echo aarch64)
           curl -fsSL "https://github.com/AppImage/appimagetool/releases/download/continuous/appimagetool-$T_ARCH.AppImage" -o /tmp/appimagetool && chmod +x /tmp/appimagetool
@@ -199,7 +199,7 @@ jobs:
           if [ "${{ matrix.target }}" = "linux-arm64" ]; then A=arm64; else A=x64; fi
           mkdir -p flatpak-build/bundle-dir
           cp -r "build/linux/$A/release/bundle" flatpak-build/bundle-dir/bundle
-          cp assets/icon.png flatpak-build/fnaf.png
+          cp assets/icon-512.png flatpak-build/fnaf.png
           printf '[Desktop Entry]\nName=FNAF\nExec=fnaf_flutter\nIcon=gitlab.httpanimations.fnafflutter\nType=Application\nCategories=Game;\n' > flatpak-build/fnaf.desktop
           cat > flatpak-build/gitlab.httpanimations.fnafflutter.metainfo.xml <<'XML'
           <?xml version="1.0" encoding="UTF-8"?>
