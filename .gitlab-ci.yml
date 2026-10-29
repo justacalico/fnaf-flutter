@@ -111,8 +111,8 @@ pages:
     - flutter config --no-analytics
     - flutter pub get
     - flutter gen-l10n
-    - flutter build web --release --base-href "/$CI_PROJECT_NAME/app/" --output public/app
-    - cd landing && flutter pub get && flutter build web --release --base-href "/$CI_PROJECT_NAME/" --output ../public
+    - flutter build web --release --base-href "/app/" --output public/app
+    - cd landing && flutter pub get && flutter build web --release --base-href "/" --output ../public
     - cd ..
     - |
       RUN_ID=$(curl -fsSL -H "Authorization: Bearer $GH_TOKEN"         "https://api.github.com/repos/justacalico/fnaf-flutter/actions/runs?head_sha=$CI_COMMIT_SHA"         | python3 -c "import json,sys;print(json.load(sys.stdin)['workflow_runs'][0]['id'])" || echo "")
