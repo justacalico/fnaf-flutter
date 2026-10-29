@@ -1,5 +1,24 @@
 import 'dart:math';
 
+import 'package:flutter/foundation.dart';
+
+abstract class GameRng {
+  int nextInt(int max);
+  bool nextBool();
+  double nextDouble();
+}
+
+class SystemRng implements GameRng {
+  final Random _r;
+  SystemRng(this._r);
+  @override
+  int nextInt(int max) => _r.nextInt(max);
+  @override
+  bool nextBool() => _r.nextBool();
+  @override
+  double nextDouble() => _r.nextDouble();
+}
+
 enum Animatronic { freddy, bonnie, chica, foxy }
 
 enum Room {
@@ -81,8 +100,8 @@ class EngineEvents {
 
 class GameEngine {
   final int night;
-  final Random rng;
-  final EngineEvents events;
+  final GameRng rng;
+  EngineEvents events;
 
   double timeSeconds = 0;
   double power = 100;
@@ -129,9 +148,12 @@ class GameEngine {
     Animatronic.foxy: 5.01,
   };
 
-  GameEngine({required this.night, Random? rng, EngineEvents? events})
-      : rng = rng ?? Random(),
+  GameEngine({required this.night, GameRng? rng, EngineEvents? events})
+      : rng = rng ?? SystemRng(Random()),
         events = events ?? EngineEvents();
+
+  @visibleForTesting
+  void forceMove(Animatronic a) => _move(a, monitorUp ? currentCam : null);
 
   Map<Animatronic, int> get ai => NightConfig.ai[night.clamp(1, 6)];
 

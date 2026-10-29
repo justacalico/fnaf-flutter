@@ -8,15 +8,23 @@ bool get isDesktop =>
     !kIsWeb && (Platform.isWindows || Platform.isLinux || Platform.isMacOS);
 
 class WindowButtons {
-  static Future<void> close() => windowManager.close();
-  static Future<void> minimize() => windowManager.minimize();
-  static Future<void> maximize() async {
+  static Future<void> Function() onClose = windowManager.close;
+  static Future<void> Function() onMinimize = windowManager.minimize;
+  static Future<void> Function() onMaximize = _toggleMaximize;
+
+  // coverage:ignore-start
+  static Future<void> _toggleMaximize() async {
     if (await windowManager.isMaximized()) {
       await windowManager.unmaximize();
     } else {
       await windowManager.maximize();
     }
   }
+  // coverage:ignore-end
+
+  static Future<void> close() => onClose();
+  static Future<void> minimize() => onMinimize();
+  static Future<void> maximize() => onMaximize();
 }
 
 class MacTopBar extends StatelessWidget implements PreferredSizeWidget {

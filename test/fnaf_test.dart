@@ -87,7 +87,7 @@ void main() {
   });
 
   test('engine mechanics', () {
-    final e = GameEngine(night: 1, rng: Random(0));
+    final e = GameEngine(night: 1, rng: SystemRng(Random(0)));
     expect(e.power, 100);
     expect(e.hour, 0);
     expect(e.clockLabel, '12:00');
@@ -106,7 +106,7 @@ void main() {
   });
 
   test('engine power out', () {
-    final e = GameEngine(night: 1, rng: Random(0));
+    final e = GameEngine(night: 1, rng: SystemRng(Random(0)));
     e.power = 0.01;
     e.tick(1);
     expect(e.powerOut, true);
@@ -114,7 +114,7 @@ void main() {
   });
 
   test('engine door blocks', () {
-    final e = GameEngine(night: 1, rng: Random(0));
+    final e = GameEngine(night: 1, rng: SystemRng(Random(0)));
     e.pathIndex[Animatronic.bonnie] = 6;
     e.leftDoorClosed = true;
     e.tick(0.1);

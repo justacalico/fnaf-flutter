@@ -14,7 +14,8 @@ class GameScreen extends StatefulWidget {
   final bool fanMuted;
   final VoidCallback onWin;
   final VoidCallback onLose;
-  const GameScreen({super.key, required this.assets, required this.night, required this.onWin, required this.onLose, this.fanMuted = false});
+  final GameEngine? engine;
+  const GameScreen({super.key, required this.assets, required this.night, required this.onWin, required this.onLose, this.fanMuted = false, this.engine});
 
   @override
   State<GameScreen> createState() => _GameScreenState();
@@ -34,7 +35,8 @@ class _GameScreenState extends State<GameScreen> {
   void initState() {
     super.initState();
     audio = AudioService(widget.assets.sounds);
-    e = GameEngine(night: widget.night, events: _Events(this));
+    e = widget.engine ?? GameEngine(night: widget.night, events: _Events(this));
+    if (widget.engine != null) e.events = _Events(this);
     timer = Timer.periodic(const Duration(milliseconds: 33), (_) {
       setState(() {
         e.tick(0.033);

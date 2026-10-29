@@ -14,6 +14,7 @@ import 'ui/game_screen.dart';
 
 const appVersion = String.fromEnvironment('APP_VERSION', defaultValue: '0.0.1');
 
+// coverage:ignore-start
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   if (isDesktop) {
@@ -38,6 +39,7 @@ Future<void> main() async {
   } catch (_) {}
   runApp(FnafApp(app: app, version: version));
 }
+// coverage:ignore-end
 
 class FnafApp extends StatefulWidget {
   final AppState app;
@@ -54,6 +56,21 @@ class _FnafAppState extends State<FnafApp> {
   int? playingNight;
   bool won = false;
   bool lost = false;
+
+  void _onWin() => setState(() => won = true);
+  void _onLose() => setState(() => lost = true);
+
+  @visibleForTesting
+  void debugWin() => _onWin();
+  @visibleForTesting
+  void debugLose() => _onLose();
+
+  @visibleForTesting
+  void startNight(int n) => setState(() {
+        playingNight = n;
+        lost = false;
+        won = false;
+      });
 
   @override
   Widget build(BuildContext context) {
@@ -72,13 +89,14 @@ class _FnafAppState extends State<FnafApp> {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          home: _shell(app),
+          home: Builder(builder: _shell),
         );
       }),
     );
   }
 
-  Widget _shell(AppState app) {
+  Widget _shell(BuildContext context) {
+    final app = widget.app;
     final l = AppLocalizations.of(context)!;
     Widget body;
     if (!app.hasAssets) {
@@ -89,8 +107,8 @@ class _FnafAppState extends State<FnafApp> {
         assets: app.assets!,
         night: playingNight!,
         fanMuted: app.fanMuted,
-        onWin: () => setState(() { won = true; }),
-        onLose: () => setState(() { lost = true; }),
+        onWin: _onWin,
+        onLose: _onLose,
       );
       if (won) {
         body = WinScreen(night: playingNight!, onNext: () {
@@ -104,8 +122,8 @@ class _FnafAppState extends State<FnafApp> {
       body = SettingsScreen(currentVersion: widget.version);
     } else {
       body = MenuScreen(
-        onNewGame: () => setState(() { playingNight = 1; lost = false; won = false; }),
-        onContinue: () => setState(() { playingNight = app.maxNight; lost = false; won = false; }),
+        onNewGame: () => startNight(1),
+        onContinue: () => startNight(app.maxNight),
         onSettings: () => setState(() => page = Page.settings),
       );
     }

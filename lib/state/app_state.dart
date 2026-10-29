@@ -38,6 +38,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
   }
 
+  // coverage:ignore-start
   Future<void> pickExe() async {
     final files = await FilePicker.pickFiles(type: FileType.custom);
     if (files.isEmpty) return;
@@ -48,6 +49,7 @@ class AppState extends ChangeNotifier {
     }
     await extractFrom(await files.single.readAsBytes());
   }
+  // coverage:ignore-end
 
   Future<void> extractFrom(Uint8List bytes) async {
     extracting = true;

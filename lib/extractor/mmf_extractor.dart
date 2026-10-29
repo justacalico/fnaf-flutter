@@ -84,13 +84,22 @@ class MmfExtractor {
       }
       if (name == '.reloc') relocFallback = sectionStart + sectionSize;
     }
-    reader.seek(position);
-    if (!reader.hasMemory(1) && relocFallback != position && relocFallback != 0) {
-      reader.seek(relocFallback);
+    if (position > reader.end) {
+      reader.seek(relocFallback != 0 ? relocFallback : reader.end);
+    } else {
+      reader.seek(position);
+      if (!reader.hasMemory(1) &&
+          relocFallback != position &&
+          relocFallback != 0) {
+        reader.seek(relocFallback);
+      }
     }
   }
 
   static void _readPackData(ByteReader reader, ExtractedGame game) {
+    if (!reader.hasMemory(4)) {
+      throw const MmfExtractException('missing game data');
+    }
     final magic = reader.peekInt();
     if (magic == _pame || magic == _pamu) return;
     if (magic == _packMagic) {

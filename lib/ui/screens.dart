@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
+import '../services/links.dart';
+import '../services/version_checker.dart';
 
 import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
@@ -71,7 +72,8 @@ class MenuScreen extends StatelessWidget {
 
 class SettingsScreen extends StatelessWidget {
   final String currentVersion;
-  const SettingsScreen({super.key, required this.currentVersion});
+  final VersionChecker? checker;
+  const SettingsScreen({super.key, required this.currentVersion, this.checker});
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
@@ -92,33 +94,31 @@ class SettingsScreen extends StatelessWidget {
       ListTile(title: Text(l.removeAssets), onTap: app.forgetAssets),
       ListTile(title: Text(l.resetSave), onTap: () => app.saveNight(1)),
       const Divider(),
-      _UpdateTile(currentVersion: currentVersion),
+      _UpdateTile(currentVersion: currentVersion, checker: checker),
     ]);
   }
 }
 
 class _UpdateTile extends StatefulWidget {
   final String currentVersion;
-  const _UpdateTile({required this.currentVersion});
+  final VersionChecker? checker;
+  const _UpdateTile({required this.currentVersion, this.checker});
   @override
   State<_UpdateTile> createState() => _UpdateTileState();
 }
 
 class _UpdateTileState extends State<_UpdateTile> {
-  late final VersionChecker checker;
+  late final VersionChecker _own =
+      VersionChecker(currentVersion: widget.currentVersion);
+  VersionChecker get checker => widget.checker ?? _own;
   bool checking = false;
   bool? result;
-  @override
-  void initState() {
-    super.initState();
-    checker = VersionChecker(currentVersion: widget.currentVersion);
-  }
   Future<void> _check() async {
     setState(() { checking = true; result = null; });
     final u = await checker.check();
     setState(() { checking = false; result = checker.lastResult; });
     if (u != null && mounted) {
-      await launchUrl(VersionChecker.releasesUrl(u.tag));
+      await Links.open(VersionChecker.releasesUrl(u.tag));
     }
   }
   @override
@@ -135,14 +135,14 @@ class _UpdateTileState extends State<_UpdateTile> {
         Padding(padding: const EdgeInsets.only(left: 16), child: Text(l.upToDate)),
       if (result == true && checker.lastUpdate != null)
         Padding(padding: const EdgeInsets.only(left: 16), child: InkWell(
-          onTap: () => launchUrl(VersionChecker.releasesUrl(checker.lastUpdate!.tag)),
+          onTap: () => Links.open(VersionChecker.releasesUrl(checker.lastUpdate!.tag)),
           child: Text(l.updateAvailable(checker.lastUpdate!.version.toString()),
               style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
         )),
       if (result == false)
         Padding(padding: const EdgeInsets.only(left: 16), child: Text(l.updateFailed)),
       Padding(padding: const EdgeInsets.only(left: 16, top: 4), child: InkWell(
-        onTap: () => launchUrl(Uri.parse(VersionChecker.releasesPage)),
+        onTap: () => Links.open(Uri.parse(VersionChecker.releasesPage)),
         child: Text(l.allReleases, style: const TextStyle(color: Colors.blue, decoration: TextDecoration.underline)),
       )),
     ]);

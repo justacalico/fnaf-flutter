@@ -10,6 +10,7 @@ class ByteReader {
   final int _end;
 
   int get position => _offset;
+  int get end => _end;
   int get remaining => _end - _offset;
   bool get done => _offset >= _end;
 
@@ -82,7 +83,7 @@ class ByteReader {
   }
 
   String readAsciiStop(int length) {
-    final s = readAscii(length);
+    final s = latin1.decode(readBytes(length), allowInvalid: true);
     final i = s.indexOf('\x00');
     return i < 0 ? s : s.substring(0, i);
   }
