@@ -65,6 +65,10 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   generate: true
+  fonts:
+    - family: Roboto
+      fonts:
+        - asset: assets/Roboto-Regular.ttf
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
@@ -108,7 +112,6 @@ flutter_launcher_icons:
   ios: true
   web:
     generate: true
+
   windows:
-    generate: true
-  macos:
     generate: true

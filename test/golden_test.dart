@@ -1,4 +1,6 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fnaf_flutter/l10n/app_localizations.dart';
@@ -22,6 +24,13 @@ Widget _wrap(Widget child, {AppState? app}) {
 }
 
 void main() {
+  setUpAll(() async {
+    final loader = FontLoader('Roboto')
+      ..addFont(Future.value(
+          ByteData.view(File('assets/Roboto-Regular.ttf').readAsBytesSync().buffer)));
+    await loader.load();
+  });
+
   testWidgets('sidebar golden', (t) async {
     await t.pumpWidget(_wrap(SizedBox(width: 400, height: 300,
         child: AppSidebar(items: [
