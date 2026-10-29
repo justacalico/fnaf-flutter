@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.2 - 2026-10-29
+#### Bug Fixes
+- 黄金图加载真实字体 - (9b4efc6) - calico
+#### Chores
+- 触发流水线 - (e5a73e4) - calico
+
+- - -
+
 ## v0.1.1 - 2026-10-29
 #### Bug Fixes
 - 修正readme的altstore链接 - (69ea466) - calico
