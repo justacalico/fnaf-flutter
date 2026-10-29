@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.7 - 2026-10-29
+#### Bug Fixes
+- 修正游戏素材映射 - (96ae5e9) - calico
+#### CI
+- 修正pages根路径 - (d56c778) - calico
+- 落地页sdk约束对齐 - (e4b98c9) - calico
+
+- - -
+
 ## v0.1.6 - 2026-10-29
 #### Bug Fixes
 - 修复linux文件选择器崩溃 - (48cfff3) - calico
