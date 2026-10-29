@@ -30,7 +30,7 @@ class _LandingState extends State<Landing> {
       } else {
         setState(() { loaded = true; });
       }
-    }).catchError((_) => setState(() { loaded = true; }));
+    }).catchError((_) { setState(() { loaded = true; }); });
   }
 
   void _go(String url) => web.window.open(url, '_blank');
