@@ -4,7 +4,6 @@ disable_changelog = false
 disable_bump_commit = false
 branch_whitelist = ["main"]
 tag_prefix = "v"
-pre_release_hooks = []
 
 [commit_types]
 docs = { changelog_title = "Documentation", bump_minor = false }
