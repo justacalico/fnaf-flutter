@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.5 - 2026-10-29
+#### Bug Fixes
+- exclusion du repo flatpak des assets de release - (1bc2787) - calico
+#### CI
+- 发布链推到github并回传release - (6a3f4ac) - calico
+#### Chores
+- 无版本提升时跳过发布 - (196b25c) - calico
+- 流水线校准 - (3ca1096) - calico
+
+- - -
+
 ## v0.1.4 - 2026-10-29
 #### Bug Fixes
 - 落地页异步告警 - (f2a4bb5) - calico
