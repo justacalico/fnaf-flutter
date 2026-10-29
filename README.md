@@ -15,7 +15,11 @@ Grab the latest release for your platform:
 - **Linux** — AppImage-style tarball, `.deb`, `.rpm`, zip, and a signed Flatpak remote
 - **Windows** — zip
 - **macOS** — zip / dmg (arm64)
-- **iOS** — unsigned `.ipa` for AltStore: `https://gitlab.com/HttpAnimations/fnaf-flutter/-/raw/main/repos/altstore.json`
+- **iOS** — unsigned `.ipa` for AltStore. Add this source URL in AltStore:
+
+  ```
+  https://gitlab.com/HttpAnimations/fnaf-flutter/-/raw/main/repos/altstore.json
+  ```
 - **Web** — play right in the browser at the landing page: <https://httpanimations.gitlab.io/fnaf-flutter/>
 
 Releases: <https://gitlab.com/HttpAnimations/fnaf-flutter/-/releases>
