@@ -164,8 +164,8 @@ jobs:
           FLATPAK_KEY_ID: ${{ secrets.FLATPAK_KEY_ID }}
         run: |
           set -euo pipefail
-          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
-          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 || true
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
+          flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 || true
           mkdir -p flatpak-build .gpg
           cat > flatpak-build/gitlab.httpanimations.fnafflutter.yml <<'YAML'
           app-id: gitlab.httpanimations.fnafflutter
@@ -213,10 +213,9 @@ jobs:
           </component>
           XML
           echo "$FLATPAK_GPG_KEY" | base64 -d | gpg --batch --homedir .gpg --import
-          sudo flatpak-builder --repo=flatpak-repo --gpg-sign="$FLATPAK_KEY_ID" --gpg-homedir="$(pwd)/.gpg" --force-clean flatpak-build/build-dir flatpak-build/gitlab.httpanimations.fnafflutter.yml
+          flatpak-builder --user --repo=flatpak-repo --gpg-sign="$FLATPAK_KEY_ID" --gpg-homedir="$(pwd)/.gpg" --force-clean flatpak-build/build-dir flatpak-build/gitlab.httpanimations.fnafflutter.yml
           mkdir -p public/flatpak artifacts
-          cp -r flatpak-repo/* public/flatpak/ 2>/dev/null || sudo cp -r flatpak-repo/* public/flatpak/
-          sudo chown -R "$USER" public/flatpak || true
+          cp -r flatpak-repo/* public/flatpak/
           gpg --homedir .gpg --export "$FLATPAK_KEY_ID" > public/flatpak/key.gpg
           KEYB64=$(base64 -w0 public/flatpak/key.gpg)
           printf '[Flatpak Ref]\nTitle=fnaf-flutter\nUrl=https://httpanimations.gitlab.io/fnaf-flutter/flatpak\nSuggestRemoteName=fnaf\nRuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo\nGPGKey=%s\n' "$KEYB64" > public/fnaf.flatpakref
