@@ -40,7 +40,8 @@ class AppState extends ChangeNotifier {
 
   // coverage:ignore-start
   Future<void> pickExe() async {
-    final files = await FilePicker.pickFiles(type: FileType.custom);
+    final files = await FilePicker.pickFiles(
+        type: FileType.custom, allowedExtensions: ['exe']);
     if (files.isEmpty) return;
     if (files.single.extension != 'exe') {
       extractError = 'read_failed';
