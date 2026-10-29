@@ -12,18 +12,21 @@ class Version implements Comparable<Version> {
   }
 
   @override
-  int compareTo(Version o) {
-    if (major != o.major) return major - o.major;
-    if (minor != o.minor) return minor - o.minor;
-    return patch - o.patch;
+  int compareTo(Version other) {
+    if (major != other.major) return major - other.major;
+    if (minor != other.minor) return minor - other.minor;
+    return patch - other.patch;
   }
 
-  bool operator >(Version o) => compareTo(o) > 0;
+  bool operator >(Version other) => compareTo(other) > 0;
   @override
   String toString() => '$major.$minor.$patch';
   @override
-  bool operator ==(Object o) =>
-      o is Version && major == o.major && minor == o.minor && patch == o.patch;
+  bool operator ==(Object other) =>
+      other is Version &&
+      major == other.major &&
+      minor == other.minor &&
+      patch == other.patch;
   @override
   int get hashCode => Object.hash(major, minor, patch);
 }

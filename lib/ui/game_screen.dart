@@ -295,7 +295,7 @@ class _FanSpinnerState extends State<_FanSpinner> with SingleTickerProviderState
   void dispose() { c.dispose(); super.dispose(); }
   @override
   Widget build(BuildContext context) {
-    return AnimatedBuilder(animation: c, builder: (_, __) =>
+    return AnimatedBuilder(animation: c, builder: (_, _) =>
       Transform.rotate(angle: c.value * math.pi * 2,
         child: const Icon(Icons.toys, color: Colors.black45, size: 34)));
   }

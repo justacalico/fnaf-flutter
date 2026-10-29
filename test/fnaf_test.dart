@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'dart:typed_data';
 
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:fnaf_flutter/extractor/byte_reader.dart';
 import 'package:fnaf_flutter/extractor/decompress.dart';
@@ -9,7 +8,6 @@ import 'package:fnaf_flutter/extractor/image_decoder.dart';
 import 'package:fnaf_flutter/extractor/mmf_extractor.dart';
 import 'package:fnaf_flutter/game/engine.dart';
 import 'package:fnaf_flutter/utils/version_utils.dart';
-import 'package:fnaf_flutter/services/version_checker.dart';
 import 'package:fnaf_flutter/assets/asset_store.dart';
 import 'package:archive/archive.dart';
 
