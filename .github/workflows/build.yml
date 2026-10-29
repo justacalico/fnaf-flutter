@@ -207,6 +207,9 @@ jobs:
             <id>gitlab.httpanimations.fnafflutter</id>
             <name>FNAF</name>
             <summary>A faithful port of Five Nights at Freddy's</summary>
+            <description>
+              <p>A faithful port of Five Nights at Freddy's. Supply your own copy of the original game and the app extracts everything it needs on first run.</p>
+            </description>
             <metadata_license>CC0-1.0</metadata_license>
             <project_license>AGPL-3.0</project_license>
             <launchable type="desktop-id">gitlab.httpanimations.fnafflutter.desktop</launchable>
