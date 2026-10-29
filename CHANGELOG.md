@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.1.1 - 2026-10-29
+#### Bug Fixes
+- 修正readme的altstore链接 - (69ea466) - calico
+
+- - -
+
 ## v0.1.0 - 2026-10-29
 #### Features
 - fnaf flutter port - (c2165cb) - calico
