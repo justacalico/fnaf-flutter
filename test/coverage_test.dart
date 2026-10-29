@@ -1,10 +1,8 @@
 import 'dart:convert';
-import 'dart:math' as math;
 import 'dart:math';
 import 'package:fnaf_flutter/utils/version_utils.dart';
 import 'dart:typed_data';
 
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -23,7 +21,6 @@ import 'package:fnaf_flutter/services/version_checker.dart';
 import 'package:fnaf_flutter/state/app_state.dart';
 import 'package:fnaf_flutter/ui/game_screen.dart';
 import 'package:fnaf_flutter/ui/screens.dart';
-import 'package:fnaf_flutter/ui/sidebar.dart';
 import 'package:fnaf_flutter/ui/top_bar.dart';
 import 'package:fnaf_flutter/main.dart';
 

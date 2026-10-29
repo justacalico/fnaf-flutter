@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart' as http_testing;
-import 'package:provider/provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:convert';
 
@@ -130,7 +129,7 @@ void main() {
   });
 
   test('version equality', () {
-    expect(const Version(1, 0, 0) == 'x', false);
+    expect(const Version(1, 0, 0) == const Object(), false);
     expect(const Version(1, 0, 0).hashCode, isA<int>());
   });
 

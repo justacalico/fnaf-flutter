@@ -5,7 +5,6 @@ import '../services/version_checker.dart';
 
 import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
-import '../services/version_checker.dart';
 
 class ImportScreen extends StatelessWidget {
   const ImportScreen({super.key});

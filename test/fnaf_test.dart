@@ -101,7 +101,9 @@ void main() {
     expect(e.usageLevel, 4);
     e.selectCam('cam2a');
     expect(e.currentCam, 'cam2a');
-    for (var i = 0; i < 6000; i++) e.tick(0.1);
+    for (var i = 0; i < 6000; i++) {
+      e.tick(0.1);
+    }
     expect(e.won || e.dead || e.powerOut, true);
   });
 
@@ -118,7 +120,9 @@ void main() {
     e.pathIndex[Animatronic.bonnie] = 6;
     e.leftDoorClosed = true;
     e.tick(0.1);
-    for (var i = 0; i < 100; i++) e.tick(0.1);
+    for (var i = 0; i < 100; i++) {
+      e.tick(0.1);
+    }
     expect(e.dead, false);
   });
 
