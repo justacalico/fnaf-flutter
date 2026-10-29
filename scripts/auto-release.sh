@@ -18,5 +18,14 @@ if ! push_bump; then
   git tag -f "$TAG"
   push_bump
 fi
-git push origin "$TAG"
+git push -o ci.skip origin "$TAG"
+git push -f github "$TAG"
 echo "Released $TAG"
+
+RUN_ID=$(bash scripts/watch-github-run.sh find --sha "$(git rev-parse "$TAG^{commit}")" --event push 2>/dev/null || true)
+if [ -n "$RUN_ID" ]; then
+  bash scripts/watch-github-run.sh "$RUN_ID"
+  RELEASE_TAG="$TAG" bash scripts/sync-from-github.sh
+else
+  echo "No GitHub run found for $TAG; skipping release sync" >&2
+fi
