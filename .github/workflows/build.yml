@@ -1,0 +1,265 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      build_all:
+        type: boolean
+        default: true
+      create_release:
+        type: boolean
+        default: false
+
+permissions:
+  contents: write
+
+env:
+  FLUTTER_VERSION: "3.47.7"
+
+concurrency:
+  group: ci-${{ github.ref }}-${{ github.event_name }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          cache: true
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq xvfb
+      - run: |
+          flutter config --no-analytics
+          flutter pub get
+          flutter gen-l10n
+          flutter analyze
+          xvfb-run -a flutter test --coverage
+
+  build:
+    needs: verify
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { target: android, os: ubuntu-latest }
+          - { target: linux, os: ubuntu-latest }
+          - { target: linux-arm64, os: ubuntu-24.04-arm, flutter: git }
+          - { target: windows, os: windows-latest }
+          - { target: macos, os: macos-latest, flutter_arch: arm64 }
+          - { target: ios, os: macos-latest, flutter_arch: arm64 }
+          - { target: web, os: ubuntu-latest }
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        if: matrix.target == 'android'
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        if: matrix.flutter != 'git'
+        with:
+          flutter-version: ${{ env.FLUTTER_VERSION }}
+          architecture: ${{ matrix.flutter_arch || 'x64' }}
+          cache: true
+
+      - name: Install Flutter from source (arm64)
+        if: matrix.flutter == 'git'
+        shell: bash
+        run: |
+          git clone --depth 1 --branch "${{ env.FLUTTER_VERSION }}" https://github.com/flutter/flutter.git "$HOME/flutter-sdk"
+          echo "$HOME/flutter-sdk/bin" >> "$GITHUB_PATH"
+          "$HOME/flutter-sdk/bin/flutter" precache --linux --windows
+
+      - name: Install Linux deps
+        if: startsWith(matrix.target, 'linux')
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev zip dpkg-dev rpm flatpak flatpak-builder ostree
+
+      - name: Android SDK
+        if: matrix.target == 'android'
+        run: |
+          ANDROID_HOME="$HOME/android-sdk"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          curl -fsSL --retry 3 -o /tmp/ct.zip "https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip"
+          unzip -q /tmp/ct.zip -d "$ANDROID_HOME/cmdline-tools"
+          mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+          for _ in $(seq 1 50); do echo y; done | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses >/dev/null
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "platforms;android-35" "build-tools;35.0.0" >/dev/null
+          echo "ANDROID_HOME=$ANDROID_HOME" >> "$GITHUB_ENV"
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+
+      - name: Android signing
+        if: matrix.target == 'android' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/tags/'))
+        env:
+          KS: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          SP: ${{ secrets.ANDROID_STORE_PASSWORD }}
+          KP: ${{ secrets.ANDROID_KEY_PASSWORD }}
+          KA: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          if [ -z "$KS" ]; then echo "no signing secrets"; exit 0; fi
+          printf '%s' "$KS" | tr -d '\r\n ' | base64 --decode > android/app/fnaf.jks
+          printf 'storeFile=fnaf.jks\nstorePassword=%s\nkeyPassword=%s\nkeyAlias=%s\n' "$SP" "$KP" "$KA" > android/app/key.properties
+
+      - name: Build Android
+        if: matrix.target == 'android'
+        run: |
+          mkdir -p artifacts
+          flutter config --no-analytics && flutter pub get && flutter gen-l10n
+          flutter build apk --release
+          flutter build appbundle --release
+          cp build/app/outputs/flutter-apk/app-release.apk artifacts/fnaf-android.apk
+          cp build/app/outputs/bundle/release/app-release.aab artifacts/fnaf-android.aab
+
+      - name: Build Linux
+        if: startsWith(matrix.target, 'linux')
+        run: |
+          mkdir -p artifacts
+          flutter config --no-analytics && flutter pub get && flutter gen-l10n
+          flutter config --enable-linux-desktop
+          flutter build linux --release
+          if [ "${{ matrix.target }}" = "linux-arm64" ]; then A=arm64; else A=x64; fi
+          B="build/linux/$A/release/bundle"
+          tar -czf "artifacts/fnaf-linux-$A.tar.gz" -C "$B" .
+          (cd "$B" && zip -r "$GITHUB_WORKSPACE/artifacts/fnaf-linux-$A.zip" . >/dev/null)
+          mkdir -p pkg/opt/fnaf pkg/usr/bin pkg/DEBIAN
+          cp -r "$B/." pkg/opt/fnaf/
+          ln -sf /opt/fnaf/fnaf_flutter pkg/usr/bin/fnaf
+          printf 'Package: fnaf-flutter\nVersion: %s\nSection: misc\nPriority: optional\nArchitecture: %s\nMaintainer: CI\nDepends: libgtk-3-0\nDescription: FNAF Flutter desktop\n' "${GITHUB_REF_NAME:-dev}" "$([ "$A" = x64 ] && echo amd64 || echo arm64)" > pkg/DEBIAN/control
+          mkdir -p pkg/usr/share/applications pkg/usr/share/icons/hicolor/512x512/apps
+          printf '[Desktop Entry]\nName=FNAF\nExec=fnaf\nIcon=fnaf\nType=Application\nCategories=Game;\n' > pkg/usr/share/applications/fnaf.desktop
+          cp assets/icon.png pkg/usr/share/icons/hicolor/512x512/apps/fnaf.png
+          dpkg-deb --build pkg "artifacts/fnaf-linux-$A.deb"
+
+      - name: Build Flatpak repo
+        if: matrix.target == 'linux'
+        env:
+          FLATPAK_GPG_KEY: ${{ secrets.FLATPAK_GPG_KEY }}
+          FLATPAK_KEY_ID: ${{ secrets.FLATPAK_KEY_ID }}
+        run: |
+          set -euo pipefail
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo || true
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 || true
+          mkdir -p flatpak-build .gpg
+          cat > flatpak-build/gitlab.httpanimations.fnafflutter.yml <<'YAML'
+          app-id: gitlab.httpanimations.fnafflutter
+          runtime: org.freedesktop.Platform
+          runtime-version: '24.08'
+          sdk: org.freedesktop.Sdk
+          command: fnaf_flutter
+          finish-args:
+            - --socket=wayland
+            - --socket=fallback-x11
+            - --socket=pulseaudio
+          modules:
+            - name: fnaf
+              buildsystem: simple
+              build-commands:
+                - cp -r bundle /app/fnaf
+                - install -Dm755 bundle/fnaf_flutter /app/bin/fnaf_flutter
+                - install -Dm644 fnaf.desktop /app/share/applications/gitlab.httpanimations.fnafflutter.desktop
+                - install -Dm644 fnaf.png /app/share/icons/hicolor/512x512/apps/gitlab.httpanimations.fnafflutter.png
+                - install -Dm644 gitlab.httpanimations.fnafflutter.metainfo.xml /app/share/metainfo/gitlab.httpanimations.fnafflutter.metainfo.xml
+              sources:
+                - type: dir
+                  path: ../bundle-dir
+                - type: file
+                  path: fnaf.desktop
+                - type: file
+                  path: fnaf.png
+                - type: file
+                  path: gitlab.httpanimations.fnafflutter.metainfo.xml
+          YAML
+          mkdir -p flatpak-build/bundle-dir
+          cp -r build/linux/x64/release/bundle flatpak-build/bundle-dir/bundle
+          cp assets/icon.png flatpak-build/fnaf.png
+          printf '[Desktop Entry]\nName=FNAF\nExec=fnaf_flutter\nIcon=gitlab.httpanimations.fnafflutter\nType=Application\nCategories=Game;\n' > flatpak-build/fnaf.desktop
+          cat > flatpak-build/gitlab.httpanimations.fnafflutter.metainfo.xml <<'XML'
+          <?xml version="1.0" encoding="UTF-8"?>
+          <component type="desktop-application">
+            <id>gitlab.httpanimations.fnafflutter</id>
+            <name>FNAF</name>
+            <summary>A faithful port of Five Nights at Freddy's</summary>
+            <metadata_license>CC0-1.0</metadata_license>
+            <project_license>AGPL-3.0</project_license>
+            <launchable type="desktop-id">gitlab.httpanimations.fnafflutter.desktop</launchable>
+          </component>
+          XML
+          echo "$FLATPAK_GPG_KEY" | base64 -d | gpg --batch --homedir .gpg --import
+          sudo flatpak-builder --repo=flatpak-repo --gpg-sign="$FLATPAK_KEY_ID" --gpg-homedir="$(pwd)/.gpg" --force-clean flatpak-build/build-dir flatpak-build/gitlab.httpanimations.fnafflutter.yml
+          mkdir -p public/flatpak artifacts
+          cp -r flatpak-repo/* public/flatpak/ 2>/dev/null || sudo cp -r flatpak-repo/* public/flatpak/
+          tar -czf artifacts/fnaf-flatpak-repo.tar.gz -C public flatpak
+
+      - name: Build Windows
+        if: matrix.target == 'windows'
+        shell: bash
+        run: |
+          mkdir -p artifacts
+          flutter config --no-analytics && flutter pub get && flutter gen-l10n
+          flutter config --enable-windows-desktop
+          flutter build windows --release
+          powershell -NoProfile -Command "Compress-Archive -Path 'build/windows/x64/runner/Release/*' -DestinationPath 'artifacts/fnaf-windows-x86_64.zip' -Force"
+
+      - name: Build macOS
+        if: matrix.target == 'macos'
+        run: |
+          mkdir -p artifacts
+          flutter config --no-analytics && flutter pub get && flutter gen-l10n
+          flutter config --enable-macos-desktop
+          flutter build macos --release
+          APP="build/macos/Build/Products/Release/fnaf_flutter.app"
+          (cd "$(dirname "$APP")" && zip -r "$GITHUB_WORKSPACE/artifacts/fnaf-macos-arm64.zip" "$(basename "$APP")" >/dev/null)
+          hdiutil create -volname "FNAF" -srcfolder "$APP" -ov -format UDZO artifacts/fnaf-macos-arm64.dmg >/dev/null
+
+      - name: Build iOS (unsigned)
+        if: matrix.target == 'ios'
+        run: |
+          mkdir -p artifacts Payload
+          flutter config --no-analytics && flutter pub get && flutter gen-l10n
+          flutter build ios --release --no-codesign
+          cp -r build/ios/iphoneos/Runner.app Payload/
+          zip -r artifacts/fnaf-ios-arm64-unsigned.ipa Payload >/dev/null
+
+      - name: Build Web
+        if: matrix.target == 'web'
+        run: |
+          mkdir -p artifacts
+          flutter config --no-analytics && flutter pub get && flutter gen-l10n
+          flutter build web --release --base-href /
+          tar -czf artifacts/fnaf-web.tar.gz -C build/web .
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: artifacts/*
+          retention-days: 400
+          if-no-files-found: ignore
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Collect assets
+        run: |
+          mkdir -p release-assets
+          find artifacts -type f -exec cp {} release-assets/ \;
+          ls -la release-assets/
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: release-assets/*
+          generate_release_notes: true

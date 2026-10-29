@@ -1,0 +1,28 @@
+from_latest_tag = false
+ignore_merge_commits = false
+disable_changelog = false
+disable_bump_commit = false
+branch_whitelist = ["main"]
+tag_prefix = "v"
+pre_release_hooks = []
+
+[commit_types]
+docs = { changelog_title = "Documentation", bump_minor = false }
+feat = { changelog_title = "Features", bump_minor = true }
+fix = { changelog_title = "Bug Fixes", bump_minor = false }
+perf = { changelog_title = "Performance", bump_minor = false }
+refactor = { changelog_title = "Refactoring", bump_minor = false }
+style = { changelog_title = "Style", bump_minor = false }
+test = { changelog_title = "Tests", bump_minor = false }
+build = { changelog_title = "Build", bump_minor = false }
+ci = { changelog_title = "CI", bump_minor = false }
+chore = { changelog_title = "Chores", bump_minor = false }
+revert = { changelog_title = "Reverts", bump_minor = false }
+
+[changelog]
+path = "CHANGELOG.md"
+authors = [ { signature = "GitLab CI", username = "gitlab-ci" } ]
+
+[bump_profiles.ci]
+pre_bump_hooks = []
+post_bump_hooks = []

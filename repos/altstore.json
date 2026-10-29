@@ -1,0 +1,16 @@
+{
+  "name": "FNAF Flutter",
+  "identifier": "gitlab.httpanimations.fnafflutter",
+  "sourceURL": "https://gitlab.com/HttpAnimations/fnaf-flutter/-/raw/main/repos/altstore.json",
+  "apps": [
+    {
+      "name": "FNAF",
+      "bundleIdentifier": "gitlab.httpanimations.fnafflutter",
+      "developerName": "HttpAnimations",
+      "localizedDescription": "A faithful port of Five Nights at Freddy's for mobile and desktop.",
+      "iconURL": "https://gitlab.com/HttpAnimations/fnaf-flutter/-/raw/main/assets/icon.png",
+      "tintColor": "8B0000",
+      "versions": []
+    }
+  ]
+}
