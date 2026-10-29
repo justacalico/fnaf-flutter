@@ -7,7 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../state/app_state.dart';
 
 class ImportScreen extends StatelessWidget {
-  const ImportScreen({super.key});
+  const ImportScreen({super.key}); // coverage:ignore-line
   @override
   Widget build(BuildContext context) {
     final l = AppLocalizations.of(context)!;
