@@ -1,6 +1,5 @@
 import 'dart:async';
 import 'dart:typed_data';
-import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import '../assets/asset_manifest.dart';
@@ -121,16 +120,19 @@ class _GameScreenState extends State<GameScreen> {
         left: off, top: 0, bottom: 0, width: 1600,
         child: _imgWidget(Assets.officeBase, fit: BoxFit.cover),
       ),
-      const Positioned(top: 90, left: 0, right: 0, child: Center(child: _FanSpinner())),
+      Positioned(
+        left: off, top: 0, height: 253, width: 1600,
+        child: _imgWidget(Assets.ceilingLights, fit: BoxFit.fill),
+      ),
       if (e.leftLight)
         Positioned(
-          left: off + 60, top: 0, bottom: 0,
-          child: _imgWidget(e.lightSeesLeft() ? Assets.bonnieAtDoor : Assets.doorLeftLit, fit: BoxFit.contain),
+          left: off + 40, top: 0, bottom: 0,
+          child: _imgWidget(e.lightSeesLeft() ? Assets.bonnieAtDoor : Assets.doorLitEmpty, fit: BoxFit.contain),
         ),
       if (e.rightLight)
         Positioned(
-          right: -off + 60, top: 0, bottom: 0,
-          child: _imgWidget(e.lightSeesRight() ? Assets.chicaAtDoor : Assets.doorLeftLit, fit: BoxFit.contain),
+          right: -off + 40, top: 0, bottom: 0,
+          child: _imgWidget(e.lightSeesRight() ? Assets.chicaAtDoor : Assets.doorLitEmpty, fit: BoxFit.contain),
         ),
     ]);
   }
@@ -155,9 +157,11 @@ class _GameScreenState extends State<GameScreen> {
       Positioned(left: 8, top: 140, child: _doorButtons(true)),
       Positioned(right: 8, top: 140, child: _doorButtons(false)),
       if (e.leftDoorClosed)
-        const Positioned(left: 46, top: 0, bottom: 0, child: _DoorSlab()),
+        Positioned(left: 46, top: 0, bottom: 0,
+            child: _imgWidget(Assets.doorLeftClose.last, fit: BoxFit.fill, w: 120)),
       if (e.rightDoorClosed)
-        const Positioned(right: 46, top: 0, bottom: 0, child: _DoorSlab()),
+        Positioned(right: 46, top: 0, bottom: 0,
+            child: _imgWidget(Assets.doorRightClose.last, fit: BoxFit.fill, w: 120)),
     ]);
   }
 
@@ -198,12 +202,24 @@ class _GameScreenState extends State<GameScreen> {
     final room = camRooms[e.currentCam];
     final occupants = room == null ? <Animatronic>{} : e.occupantsOf(room);
     final views = Assets.camViews[e.currentCam] ?? const [0];
-    final view = views[occupants.length.clamp(0, views.length - 1)];
+    var idx = occupants.isEmpty ? 0 : views.length - 1;
+    for (final a in occupants) {
+      final occ = Assets.camOccupants[a.name];
+      if (occ != null && occ.isNotEmpty) {
+        idx = views.length - 1;
+        break;
+      }
+    }
+    final view = views[idx.clamp(0, views.length - 1)];
     final noise = _img(Assets.staticNoise[staticFrame]);
+    final label = Assets.camLabels[e.currentCam];
     return Container(color: Colors.black, child: Stack(fit: StackFit.expand, children: [
       _imgWidget(view, fit: BoxFit.cover),
       if (noise != null)
         Opacity(opacity: 0.25, child: Image.memory(noise, fit: BoxFit.cover, width: double.infinity, height: double.infinity, gaplessPlayback: true)),
+      _imgWidget(Assets.monitorFrame, fit: BoxFit.fill),
+      if (label != null)
+        Positioned(left: 12, top: 12, child: _imgWidget(label, fit: BoxFit.contain)),
       if (e.currentCam == 'cam6')
         const Center(child: Text('- CAMERA DISABLED -\nAUDIO ONLY', textAlign: TextAlign.center,
             style: TextStyle(color: Colors.white70, fontSize: 20, fontFamily: 'monospace'))),
@@ -229,6 +245,7 @@ class _GameScreenState extends State<GameScreen> {
       ...buttons.entries.map((b) => Positioned(
         left: b.value.dx * 300, top: b.value.dy * 240,
         child: GestureDetector(
+          key: Key('cambtn_${b.key}'),
           onTap: () => setState(() => e.selectCam(b.key)),
           child: Container(
             padding: const EdgeInsets.all(3),
@@ -236,8 +253,8 @@ class _GameScreenState extends State<GameScreen> {
               color: e.currentCam == b.key ? Colors.green : Colors.black54,
               border: Border.all(color: Colors.white54),
             ),
-            child: Text(b.key.toUpperCase().replaceAll('CAM', 'CAM '),
-                style: const TextStyle(color: Colors.white, fontSize: 9, fontFamily: 'monospace')),
+            child: _imgWidget(Assets.camLabels[b.key] ?? Assets.camButton,
+                fit: BoxFit.contain, w: 46),
           ),
         ))),
     ])));
@@ -265,41 +282,6 @@ class _PanelBtn extends StatelessWidget {
             style: TextStyle(color: on ? Colors.white : Colors.white70, fontSize: 10, fontFamily: 'monospace'))),
       ),
     );
-  }
-}
-
-class _DoorSlab extends StatelessWidget {
-  const _DoorSlab();
-  @override
-  Widget build(BuildContext context) {
-    return Container(width: 60,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(colors: [Color(0xFF444444), Color(0xFF222222)]),
-          border: Border(left: BorderSide(color: Colors.yellow, width: 3), right: BorderSide(color: Colors.yellow, width: 3)),
-        ));
-  }
-}
-
-class _FanSpinner extends StatefulWidget {
-  const _FanSpinner();
-  @override
-  State<_FanSpinner> createState() => _FanSpinnerState();
-}
-
-class _FanSpinnerState extends State<_FanSpinner> with SingleTickerProviderStateMixin {
-  late final AnimationController c;
-  @override
-  void initState() {
-    super.initState();
-    c = AnimationController(vsync: this, duration: const Duration(milliseconds: 300))..repeat();
-  }
-  @override
-  void dispose() { c.dispose(); super.dispose(); }
-  @override
-  Widget build(BuildContext context) {
-    return AnimatedBuilder(animation: c, builder: (_, _) =>
-      Transform.rotate(angle: c.value * math.pi * 2,
-        child: const Icon(Icons.toys, color: Colors.black45, size: 34)));
   }
 }
 

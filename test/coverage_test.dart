@@ -31,13 +31,13 @@ AssetStore fakeStore() {
   final images = <int, Uint8List>{};
   void add(int h) => images[h] = png;
   add(Assets.officeBase);
-  add(Assets.officePan);
-  add(Assets.doorLeftLit);
+  add(Assets.doorLitEmpty);add(Assets.ceilingLights);
+  add(Assets.doorLeftClose.last);add(Assets.doorRightClose.last);add(Assets.monitorFrame);
   add(Assets.bonnieAtDoor);
   add(Assets.chicaAtDoor);
   add(Assets.camMap);
-  add(Assets.titleBg);
-  add(Assets.menuFreddy);
+  for (final id in Assets.titleBgs) { add(id); }
+  
   for (final id in Assets.staticNoise) {
     add(id);
   }
@@ -386,9 +386,9 @@ void main() {
       await t.tap(find.byIcon(Icons.keyboard_arrow_up));
       await t.pump(const Duration(milliseconds: 100));
       expect(e.monitorUp, true);
-      await t.tap(find.text('CAM 1C'));
+      await t.tap(find.byKey(const Key('cambtn_cam1c')));
       await t.pump(const Duration(milliseconds: 100));
-      await t.tap(find.text('CAM 6'));
+      await t.tap(find.byKey(const Key('cambtn_cam6')));
       await t.pump(const Duration(milliseconds: 100));
       await t.tap(find.byIcon(Icons.keyboard_arrow_down));
       await t.pump(const Duration(milliseconds: 100));

@@ -4,6 +4,7 @@ import '../services/links.dart';
 import '../services/version_checker.dart';
 
 import '../l10n/app_localizations.dart';
+import '../assets/asset_manifest.dart';
 import '../state/app_state.dart';
 
 class ImportScreen extends StatelessWidget {
@@ -42,7 +43,7 @@ class MenuScreen extends StatelessWidget {
     final l = AppLocalizations.of(context)!;
     final app = context.watch<AppState>();
     return Container(color: Colors.black, child: Stack(fit: StackFit.expand, children: [
-      if (app.assets?.image(396) case final bg?)
+      if (app.assets?.image(Assets.titleBgs.first) case final bg?)
         Image.memory(bg, fit: BoxFit.cover, opacity: const AlwaysStoppedAnimation(0.35)),
       Center(child: Column(mainAxisSize: MainAxisSize.min, children: [
         Text('Five Nights at Freddy\'s', style: Theme.of(context).textTheme.displaySmall?.copyWith(color: Colors.white, fontFamily: 'monospace')),
