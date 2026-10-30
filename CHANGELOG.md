@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## v0.2.0 - 2026-10-30
+#### Features
+- 缓存提取的游戏素材 - (4a55b90) - calico
+#### CI
+- 降低github轮询频率 - (d75250b) - calico
+
+- - -
+
 ## v0.1.7 - 2026-10-29
 #### Bug Fixes
 - 修正游戏素材映射 - (96ae5e9) - calico
