@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../assets/asset_cache.dart';
 import '../assets/asset_store.dart';
 
 AssetStore _extractWorker(Uint8List bytes) =>
@@ -36,6 +37,14 @@ class AppState extends ChangeNotifier {
     final l = p.getString(_kLocale);
     if (l != null && l.isNotEmpty) locale = Locale(l);
     notifyListeners();
+    // coverage:ignore-start
+    AssetCache.load().then((s) {
+      if (s != null && assets == null) {
+        assets = s;
+        notifyListeners();
+      }
+    });
+    // coverage:ignore-end
   }
 
   // coverage:ignore-start
@@ -59,6 +68,7 @@ class AppState extends ChangeNotifier {
     notifyListeners();
     try {
       assets = await compute(_extractWorker, bytes);
+      if (assets != null) AssetCache.save(assets!);
     } catch (_) {
       extractError = 'extract_failed';
     }
@@ -97,6 +107,7 @@ class AppState extends ChangeNotifier {
 
   void forgetAssets() {
     assets = null;
+    AssetCache.clear();
     notifyListeners();
   }
 }

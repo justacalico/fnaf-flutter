@@ -44,3 +44,63 @@ class AssetExtractor {
     return AssetStore(images: images, sounds: sounds, appName: game.appName);
   }
 }
+
+class AssetStoreCodec {
+  static Uint8List encode(AssetStore s) {
+    final out = BytesBuilder();
+    void w32(int v) => out.add((ByteData(4)..setUint32(0, v)).buffer.asUint8List());
+    void w16(int v) => out.add((ByteData(2)..setUint16(0, v)).buffer.asUint8List());
+    out.add(const [70, 78, 65, 49]);
+    final name = s.appName.codeUnits;
+    w16(name.length);
+    out.add(name);
+    w32(s.images.length);
+    s.images.forEach((h, d) {
+      w32(h);
+      w32(d.length);
+      out.add(d);
+    });
+    w32(s.sounds.length);
+    s.sounds.forEach((n, d) {
+      final nb = n.codeUnits;
+      w16(nb.length);
+      out.add(nb);
+      w32(d.length);
+      out.add(d);
+    });
+    return out.toBytes();
+  }
+
+  static AssetStore decode(Uint8List data) {
+    var p = 4;
+    int r32() {
+      final v = ByteData.sublistView(data, p).getUint32(0);
+      p += 4;
+      return v;
+    }
+
+    int r16() {
+      final v = ByteData.sublistView(data, p).getUint16(0);
+      p += 2;
+      return v;
+    }
+
+    final nameLen = r16();
+    final appName = String.fromCharCodes(data.sublist(p, p + nameLen));
+    p += nameLen;
+    final images = <int, Uint8List>{};
+    for (var i = r32(); i > 0; i--) {
+      images[r32()] = data.sublist(p + 4, p + 4 + ByteData.sublistView(data, p).getUint32(0));
+      p += 4 + images.values.last.length;
+    }
+    final sounds = <String, Uint8List>{};
+    for (var i = r32(); i > 0; i--) {
+      final nl = r16();
+      final n = String.fromCharCodes(data.sublist(p, p + nl));
+      p += nl;
+      sounds[n] = data.sublist(p + 4, p + 4 + ByteData.sublistView(data, p).getUint32(0));
+      p += 4 + sounds.values.last.length;
+    }
+    return AssetStore(images: images, sounds: sounds, appName: appName);
+  }
+}

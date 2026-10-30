@@ -301,6 +301,16 @@ void main() {
   });
 
   group('audio service', () {
+    test('store codec round trips', () {
+      final store = AssetStore(images: {1: Uint8List.fromList([1, 2, 3]), 400: Uint8List.fromList([9])},
+          sounds: {'fan': Uint8List.fromList([5, 6]), 'music box': Uint8List.fromList([7])}, appName: 'fnaf');
+      final back = AssetStoreCodec.decode(AssetStoreCodec.encode(store));
+      expect(back.appName, 'fnaf');
+      expect(back.image(1), [1, 2, 3]);
+      expect(back.image(400), [9]);
+      expect(back.sound('fan'), [5, 6]);
+      expect(back.sound('music box'), [7]);
+    });
     test('plays nothing without data', () async {
       final s = AudioService({});
       s.enabled = false;
