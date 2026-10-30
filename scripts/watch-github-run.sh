@@ -27,13 +27,13 @@ watch_run() {
   local run_id="$1" conclusion=""
   echo "Watching GitHub run $run_id..."
   for _ in $(seq 1 8); do
-    gh run watch "$run_id" -R "$REPO" --exit-status 2>&1 || true
+    gh run watch "$run_id" -R "$REPO" --exit-status --interval 60 2>&1 || true
     conclusion=$(gh api "repos/$REPO/actions/runs/$run_id" -q '.conclusion' 2>/dev/null || true)
     case "$conclusion" in
       success) return 0 ;;
       failure|cancelled|timed_out|startup_failure|action_required|stale|skipped|neutral)
         echo "GitHub run $run_id concluded: $conclusion" >&2; return 1 ;;
-      *) sleep 10 ;;
+      *) sleep 30 ;;
     esac
   done
   return 1
